@@ -1,4 +1,4 @@
-<form theme="light" version="2.6">
+<form theme="light" version="3.0">
   <label>Data Locator</label>
   <description>Dashboard to help locate indexes and sourcetypes that may contain data of interest based on a TERM search.  It also provides timeframe information for earliest and latest event</description>
   <init>
@@ -25,19 +25,12 @@
       <choice value="*">All</choice>
       <valuePrefix>index=</valuePrefix>
       <delimiter> OR </delimiter>
-      <fieldForLabel>title</fieldForLabel>
-      <fieldForValue>title</fieldForValue>
+      <fieldForLabel>index</fieldForLabel>
+      <fieldForValue>index</fieldForValue>
       <search>
-        <query>| rest /services/data/indexes 
-| search isInternal=0 isReady=1 NOT minTime="" 
-| fields title 
-| search NOT 
-    [| inputlookup datalocator_index_exclusions.csv 
-    | fields + index 
-    | rename index as title ] 
-| dedup title</query>
-        <earliest>$timeframe.earliest$</earliest>
-        <latest>$timeframe.latest$</latest>
+        <query>| tstats count where index=* by index | dedup index</query>
+        <earliest>0</earliest>
+        <latest></latest>
       </search>
       <default>*</default>
       <initialValue>*</initialValue>
@@ -54,7 +47,7 @@
       <delimiter> OR </delimiter>
       <fieldForValue>sourcetype</fieldForValue>
       <search>
-        <query>| metadata type=sourcetypes $indices$</query>
+        <query>| tstats count where $indices$ by sourcetype | dedup sourcetype</query>
         <earliest>$timeframe.earliest$</earliest>
         <latest>$timeframe.latest$</latest>
       </search>
@@ -213,7 +206,7 @@
             </p>
           </p>
           <p> An example of how this can affect results is searching for an IP address. Many of the indexes/sourcetypes will have Major segementers
-          for events containing IP addresses.
+          for events containing IP addresses; however, the <i>iptables</i> sourcetype requires the IP address be prepended with either "SRC=", "DST=", or "*" (e.g. "*8.8.8.8"). 
           </p>
           <ul>
             <li>To specify multiple "terms" that will be joined together logically with an "AND" operator, simply separate the terms with a semi-colon (";")</li>
