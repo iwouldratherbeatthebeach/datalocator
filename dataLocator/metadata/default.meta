@@ -1,0 +1,10 @@
+[]
+access = read : [ * ], write : [ admin ]
+export = system          # objects available everywhere
+
+[views]
+export = app
+
+[macros]
+export = app
+
